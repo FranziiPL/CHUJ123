@@ -25,7 +25,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- FORMULARZ -->
         <div id="form-container">
             <div class="header">Ankieta demograficzna</div>
             <div class="content">
@@ -35,10 +34,8 @@
                     <label><input type="radio" name="gender" value="mężczyzna"> Mężczyzna</label>
                     <label><input type="radio" name="gender" value="inne"> Inne</label>
                 </div>
-
                 <label>Wiek (w latach):</label>
                 <input type="number" id="age" min="1" max="120" placeholder="Wpisz wiek">
-
                 <label>Wykształcenie:</label>
                 <select id="education">
                     <option value="">— wybierz —</option>
@@ -48,18 +45,15 @@
                     <option value="zawodowe">zawodowe</option>
                     <option value="wyższe">wyższe</option>
                 </select>
-
                 <button onclick="startLoading()">Przejdź dalej</button>
             </div>
         </div>
 
-        <!-- ŁADOWANIE -->
         <div id="loading-container" class="loading">
             <div class="spinner"></div>
             <h2>Trwa ładowanie. Proszę czekać…</h2>
         </div>
 
-        <!-- PODZIĘKOWANIE -->
         <div id="thank-container" class="thank">
             Dziękujemy za udział w badaniu.<br><br>
             Celem niniejszego testu było sprawdzenie cierpliwości użytkownika nim zdecyduje się opuścić stronę.<br><br>
@@ -68,8 +62,8 @@
     </div>
 
     <script>
-        const APP_URL = 'https://script.google.com/macros/s/AKfycbykESIJPdmJHVPDrh23uUdXHmk07dI425yqaypSzvf1dyEcadPtmuuqJyE84T4G8ty2xQ/exec'; 
-        // ← ZMIEŃ na Twój najnowszy URL z Apps Script (kończy się na /exec)
+        const APP_URL = 'https://script.google.com/macros/s/AKfycbzH_MsmuJj40uZZIo_laFZVhFqZlINKAN8PmZqsghiC6oS39bLfj8oWb02gbx-D67WVFw/exec';
+        // ← ZMIEŃ na Twój najnowszy URL z Apps Script
 
         let startTime = null;
         let payload = null;
@@ -98,27 +92,28 @@
             };
 
             show('loading-container');
-            sendData();                    // pierwszy zapis od razu
+            sendData();
         }
 
         function sendData() {
             if (!payload || !startTime) return;
-            
             const timeSpent = Math.floor((Date.now() - startTime) / 1000);
             payload.time_seconds = timeSpent;
 
             fetch(APP_URL, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },   // ← TO JEST KLUCZOWA ZMIANA
                 body: JSON.stringify(payload),
                 keepalive: true
-            }).catch(() => {}); // nie blokujemy użytkownika
+            })
+            .then(r => {
+                if (r.ok) console.log('✅ Zapisano w arkuszu!');
+                else console.error('❌ Błąd:', r.status);
+            })
+            .catch(err => console.error('❌ Błąd połączenia:', err));
         }
 
-        // AKTUALIZACJA CO 1 SEKUNDĘ
-        setInterval(() => {
-            if (payload && startTime) sendData();
-        }, 1000);
+        setInterval(() => { if (payload && startTime) sendData(); }, 1000);
 
         window.onload = function() {
             if (localStorage.getItem('surveyCompleted') === 'true') {
