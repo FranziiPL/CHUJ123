@@ -129,10 +129,22 @@ window.addEventListener('pagehide', () => {
     sendFinalData();
 });
 
-// 📱 dodatkowo dla niektórych przeglądarek
+// 🔚 wyjście ze strony (zamknięcie / reload)
+window.addEventListener('pagehide', () => {
+    sendFinalData();
+});
+
+// 👁️ zmiana widoczności (bardziej „badawcze”)
+let visibilityTimer = null;
+
 window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
-        sendFinalData();
+        visibilityTimer = setTimeout(() => {
+            sendFinalData();
+            show('thank-container');
+        }, 2000); // opóźnienie 2 sekundy
+    } else {
+        clearTimeout(visibilityTimer);
     }
 });
 
