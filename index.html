@@ -28,6 +28,7 @@
         <div id="form-container">
             <div class="header">Podstawowe dane</div>
             <div class="content">
+                
                 <label>Twój kod uczestnika (pierwsze dwie litery imienia + rok urodzenia):</label>
                 <input type="text" id="userCode" maxlength="6" placeholder="np. JA1995" style="text-transform: uppercase;">
                 <small style="color:#666; display:block; margin-top:5px;">Przykład: Jan Kowalski ur. 1995 → <strong>JA1995</strong></small>
@@ -68,11 +69,11 @@
     </div>
 
     <script>
-        const APP_URL = 'https://script.google.com/macros/s/AKfycbz3gqVyqug9KEbMaVg8BXok3fmgCd7pPSKCp10dgI33wAjiEvzKcgSqOMnOdVEuQv-4vA/exec';
+        const APP_URL = 'https://script.google.com/macros/s/AKfycbwGPf-zh15A_6VWyBeXX4RPtpy1HwT6XPbtWhd7u5ib0SwnIOW_NVYPS9x91mkG0kM8bg/exec';
 
         let startTime = null;
         let payload = null;
-        let dataSent = false;
+        let dataSent = false;           // ← KLUCZOWA flaga
 
         function show(id) {
             document.querySelectorAll('.container > div').forEach(div => div.style.display = 'none');
@@ -107,9 +108,7 @@
         }
 
         function sendFinalData() {
-            if (!payload || !startTime || dataSent) return;
-
-            dataSent = true;   // blokada od razu
+            if (!payload || !startTime || dataSent) return;   // ← blokada wielokrotnego wysyłania
 
             const finalTime = Math.floor((Date.now() - startTime) / 1000);
             payload.time_seconds = finalTime;
@@ -120,8 +119,14 @@
                 body: JSON.stringify(payload),
                 keepalive: true
             })
-            .then(() => localStorage.setItem('surveyCompleted', 'true'))
-            .catch(() => localStorage.setItem('surveyCompleted', 'true'));
+            .then(() => {
+                dataSent = true;
+                localStorage.setItem('surveyCompleted', 'true');
+            })
+            .catch(() => {
+                dataSent = true;
+                localStorage.setItem('surveyCompleted', 'true');
+            });
         }
 
         window.onload = function() {
@@ -132,19 +137,12 @@
             show('form-container');
         };
 
-        // Najważniejsze zdarzenia
+        // Zdarzenia wysyłające dane – tylko raz
         window.addEventListener('beforeunload', sendFinalData);
-
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden' && !dataSent) {
-                sendFinalData();
-            }
+            if (document.visibilityState === 'hidden') sendFinalData();
         });
-
-        // Dodatkowe dla mobile i niektórych przeglądarek
-        window.addEventListener('pagehide', () => {
-            if (!dataSent) sendFinalData();
-        });
+        window.addEventListener('pagehide', sendFinalData);
     </script>
 </body>
 </html>
