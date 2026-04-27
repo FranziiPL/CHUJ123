@@ -29,8 +29,8 @@
             <div class="header">Podstawowe dane</div>
             <div class="content">
                 <label>Twój kod uczestnika (pierwsze dwie litery imienia + rok urodzenia):</label>
-                <input type="text" id="userCode" maxlength="6" placeholder="np. JA1995" style="text-transform: uppercase;">
-                <small style="color:#666; display:block; margin-top:5px;">Przykład: Jan Kowalski ur. 1995 → <strong>JA1995</strong></small>
+                <input type="text" id="userCode" maxlength="6" placeholder="np. KA1995" style="text-transform: uppercase;">
+                <small style="color:#666; display:block; margin-top:5px;">Przykład: Jan Kowalski ur. 1995 → <strong>KA1995</strong></small>
 
                 <label>Płeć:</label>
                 <div class="radio-group">
@@ -109,8 +109,7 @@
         function sendFinalData() {
             if (!payload || !startTime || dataSent) return;
 
-            dataSent = true;   // natychmiast blokujemy wszystkie kolejne próby
-
+            dataSent = true;                    // blokujemy dalsze wysyłki od razu
             const finalTime = Math.floor((Date.now() - startTime) / 1000);
             payload.time_seconds = finalTime;
 
@@ -132,13 +131,13 @@
             show('form-container');
         };
 
-        // === TYLKO JEDNO GŁÓWNE ZDARZENIE + visibilitychange jako backup ===
-        window.addEventListener('beforeunload', sendFinalData);
+        // Tylko jedno główne zdarzenie + małe opóźnienie
+        window.addEventListener('beforeunload', () => {
+            setTimeout(sendFinalData, 10);   // małe opóźnienie pomaga w niektórych przeglądarkach
+        });
 
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden' && !dataSent) {
-                sendFinalData();
-            }
+            if (document.visibilityState === 'hidden') sendFinalData();
         });
     </script>
 </body>
