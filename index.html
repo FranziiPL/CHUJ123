@@ -12,7 +12,9 @@
         .content {padding:40px 30px; text-align:center;}
         label {display:block; margin:20px 0 8px; font-weight:500; text-align:left;}
         select, input {width:100%; padding:12px; border:2px solid #ddd; border-radius:8px; font-size:1.1em; box-sizing: border-box;}
-        .radio-group {display:flex; gap:20px; justify-content:center; margin:15px 0;}
+        .radio-group {display:flex; gap:15px; justify-content:flex-start; margin:15px 0; flex-wrap: wrap; text-align: left;}
+        .radio-group label {display: flex; align-items: center; margin: 0; font-weight: 400; cursor: pointer; width: 100%;}
+        .radio-group input {width: auto; margin-right: 10px;}
         button {margin-top:30px; padding:15px 40px; font-size:1.2em; background:#27ae60; color:white; border:none; border-radius:8px; cursor:pointer;}
         button:hover {background:#219653;}
         
@@ -28,8 +30,15 @@
         <div id="form-container">
             <div class="header">Podstawowe dane</div>
             <div class="content">
-                <label> Kod użytkownia (2 pierwsze litery imienia + rok urodzenia):</label>
+                <label>Unikalny kod (2 litery imienia + rok urodzenia):</label>
                 <input type="text" id="user_code" placeholder="np. MA1995" maxlength="10">
+
+                <label>Wypełniam ankietę na:</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="device" value="stacjonarny"> Komputerze stacjonarnym</label>
+                    <label><input type="radio" name="device" value="laptop"> Laptopie</label>
+                    <label><input type="radio" name="device" value="mobilne"> Urządzeniu mobilnym (telefon, tablet)</label>
+                </div>
 
                 <label>Płeć:</label>
                 <div class="radio-group">
@@ -67,7 +76,8 @@
     </div>
 
     <script>
-        const APP_URL = 'https://script.google.com/macros/s/AKfycbzEF39xj1e2-oHLyWc58s_62W9YSQmCNWjZTA0RTOTB2CnE8BYW8ZDpSojowl0fBfUKhA/exec';
+        // TUTAJ WKLEJ SWÓJ URL
+        const APP_URL = 'https://script.google.com/macros/s/AKfycbxFJ4Cp22Cq6G1E65jUTLV1ecTk2JaDhCLoedPvKe47mQSQi7QQzwoi3oyq5jk7v6yeDw/exec';
 
         let startTime = null;
         let payload = null;
@@ -85,24 +95,26 @@
 
         function startLoading() {
             const userCode = document.getElementById('user_code').value.trim();
+            const device = document.querySelector('input[name="device"]:checked');
             const gender = document.querySelector('input[name="gender"]:checked');
             const age = document.getElementById('age').value;
             const education = document.getElementById('education').value;
 
-            // Walidacja
-            if (!userCode) { alert('Wpisz swój unikalny kod'); return; }
+            if (!userCode) { alert('Wpisz swój kod'); return; }
+            if (!device) { alert('Wybierz urządzenie'); return; }
             if (!gender) { alert('Wybierz płeć'); return; }
             if (!age || age < 1) { alert('Podaj poprawny wiek'); return; }
             if (!education) { alert('Wybierz wykształcenie'); return; }
 
             startTime = Date.now();
             payload = {
-                user_code: userCode, // Dodane do danych wysyłanych
+                user_code: userCode,
+                device: device.value,
                 gender: gender.value,
                 age: parseInt(age),
                 education: education,
                 time_seconds: 0,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toLocaleString("pl-PL") // Ładniejszy format daty
             };
 
             show('loading-container');
